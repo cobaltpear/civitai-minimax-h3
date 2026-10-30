@@ -35,7 +35,7 @@ Each model's Civitai page says which settings its creator recommends. This repo 
 | The creator recommends | Use | In your `Dockerfile` |
 |---|---|---|
 | no sparse attention (most models — e.g. 8 steps, Euler) | `pack.json` — 8 steps, Euler, shift 8/4 | leave `ARG RECOMMENDED=0` |
-| **sparse attention** (e.g. «90% sparse from the start») | `pack-sparse.json` — 90% sparse from the first step, shift 12/3, res_multistep, 8 steps | change to `ARG RECOMMENDED=1` |
+| **sparse attention** (e.g. «90% sparse from the start») | `pack-sparse.json` — 90% sparse from the first step, shift 12/3, res_multistep, 8 steps | change to `ARG RECOMMENDED=1` (or put a line `RECOMMENDED=1` in `civitai.env`) |
 
 `RECOMMENDED=1` installs PyTorch for CUDA 13, which the fast sparse attention needs. It only runs on machines with CUDA 13, so also set **Minimum CUDA version** `13.0` on the endpoint (below). It downloads more, so the build runs close to RunPod's 30-minute limit. A sparse model also runs with `RECOMMENDED=0` — just slower.
 
@@ -136,7 +136,7 @@ Tips: Starts from your picture: 5 s at 24 fps with sound. Describe the motion an
 
 ### Compatible clients
 
-- [Cobalt Pear](https://cobaltpear.github.io/) — a one-page web app: add this repo's URL (or, for sparse attention, `https://raw.githubusercontent.com/cobaltpear/civitai-minimax-h3/main/pack-sparse.json`), your endpoint ID and API key, then attach a picture and type the motion. Everything stays in your browser. [Try the demo](https://cobaltpear.github.io/demo/) without RunPod.
+- [Cobalt Pear](https://cobaltpear.github.io/) — a one-page web app. Paste the same Civitai link under **Models → Custom**: it reads the model's settings from Civitai and turns **Sparse** on when the creator's page asks for sparse attention (you can switch it), then shows the steps for your copy — `RECOMMENDED=1` and the CUDA setting included. Attach a picture and type the motion. Everything stays in your browser. [Try the demo](https://cobaltpear.github.io/demo/) without RunPod.
 
 <!-- cp:page-changes -->
 RunPod and Civitai change their pages from time to time. If a button or step here looks different from what you see, tell us in [Discussions](https://github.com/cobaltpear/cobaltpear.github.io/discussions) and we'll update this guide.

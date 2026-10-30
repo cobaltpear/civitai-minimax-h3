@@ -2,14 +2,14 @@
 # MiniMax H3 Universal (picture to video with sound) — everything the worker image needs. The Dockerfile in your copy downloads this file
 # from the original repo on every build, so fixes made there reach you with a rebuild.
 set -eu
-# civitai.env in your copy wins over the two Dockerfile lines
+# civitai.env in your copy wins over the Dockerfile lines (CIVITAI_TOKEN, CIVITAI_MODEL, RECOMMENDED)
 if [ -f /setup/civitai.env ]; then
-  for k in CIVITAI_TOKEN CIVITAI_MODEL; do
+  for k in CIVITAI_TOKEN CIVITAI_MODEL RECOMMENDED; do
     v=$(sed -n "s/^[[:space:]]*$k[[:space:]]*=//p" /setup/civitai.env | tr -d '\r"'"'"' ' | head -n 1)
     [ -z "$v" ] || eval "$k=\$v"
   done
 fi
-export CIVITAI_TOKEN CIVITAI_MODEL
+export CIVITAI_TOKEN CIVITAI_MODEL RECOMMENDED
 case "${CIVITAI_TOKEN:-}" in ""|PASTE_*) echo "ERROR: put your Civitai token at the top of the Dockerfile" >&2; exit 1;; esac
 case "${CIVITAI_MODEL:-}" in ""|PASTE_*) echo "ERROR: put the model's Civitai page link (or version number) at the top of the Dockerfile" >&2; exit 1;; esac
 
