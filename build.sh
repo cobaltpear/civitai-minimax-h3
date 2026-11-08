@@ -27,9 +27,9 @@ def get(path):
 def rank(f):
     fp, name = (f.get("metadata", {}).get("fp") or "").lower(), f["name"].lower()
     if f.get("type") not in ("Model", "Diffusion Model") or f.get("metadata", {}).get("format") != "SafeTensor" or f.get("sizeKB", 0) < 15e6: return None
-    if re.search(r"nvfp4|int4|gguf|mxfp", name): return None
+    if re.search(r"nvfp4|int4|gguf|mxfp|w[0-7]a\d", name): return None   # w4a8, w6a8 …: weights below 8 bits
     return 0 if fp == "int8" or "int8" in name else 1 if fp == "fp8" or "fp8" in name else None
-def usable(v): return sorted((f for f in v.get("files", []) if rank(f) is not None), key=rank)
+def usable(v): return sorted((f for f in v.get("files", []) if rank(f) is not None), key=lambda f: (rank(f), f.get("sizeKB", 0)))   # same kind: the smaller file fits the GPU
 m = re.search(r"modelVersionId=(\d+)", link) or re.fullmatch(r"(\d+)", link)
 if m: version = get(f"model-versions/{m.group(1)}")
 else:
@@ -48,6 +48,7 @@ url = f["downloadUrl"] + ("&" if "?" in f["downloadUrl"] else "?") + "token=" + 
 def part(a, b): return urllib.request.urlopen(urllib.request.Request(url, headers={"Range": f"bytes={a}-{b}", "User-Agent": "cobaltpear"}), timeout=120).read()
 n = struct.unpack("<Q", part(0, 7))[0]
 keys = list(json.loads(part(8, 7 + n)))
+keys = [re.sub(r"^(model\.)?diffusion_model\.", "", k) for k in keys]   # some files keep the full-checkpoint prefix
 if not (any(k.startswith("video_patch_proj") for k in keys) and any(k.startswith("audio_patch_proj") for k in keys)):
     fail(f"{f['name']} is not a MiniMax H3 model inside, though Civitai lists it as {base} — pick another version")
 print(f"Downloading {f['name']} ({f.get('sizeKB', 0) / 1e6:.1f} GB)")
